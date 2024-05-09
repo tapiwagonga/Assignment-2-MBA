@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Assignment2___</string>
+    <string name="full_name">Enter your name</string>
+    <string name="your_name_hint">Your name...</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="dob">Date of Birth</string>
+    <string name="register">Register</string>
+    <string name="login">Login</string>
+    <string name="image_preview">Image Preview</string>
+    <string name="enter_caption">Enter a caption</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="submit_post">Submit Post</string>
+    <string name="invalid_email_format">Invalid Email Format</string>
+    <string name="password_error">Password must be at least 8 characters</string>
+</resources>
