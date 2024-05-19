@@ -1,16 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    android:background="@color/backgroundColor"
+    tools:context=".RegisterActivity">
+
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/logo"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="App Logo" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Please fill out the fields to register"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="16dp" />
 
     <EditText
-        android:id="@+id/fullNameEditText"
+        android:id="@+id/nameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Full Name"
-        android:inputType="textPersonName"/>
+        android:layout_marginBottom="8dp"
+        android:padding="10dp"
+        android:background="@drawable/edit_text_background" />
 
     <EditText
         android:id="@+id/dobEditText"
@@ -18,28 +41,47 @@
         android:layout_height="wrap_content"
         android:hint="Date of Birth"
         android:focusable="false"
-        android:cursorVisible="false"
         android:clickable="true"
-        android:inputType="none"/>
+        android:layout_marginBottom="8dp"
+        android:padding="10dp"
+        android:background="@drawable/edit_text_background" />
 
     <EditText
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Email Address"
-        android:inputType="textEmailAddress"/>
+        android:layout_marginBottom="8dp"
+        android:padding="10dp"
+        android:background="@drawable/edit_text_background" />
 
     <EditText
         android:id="@+id/passwordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
-        android:inputType="textPassword"/>
+        android:layout_marginBottom="16dp"
+        android:inputType="textPassword"
+        android:padding="10dp"
+        android:background="@drawable/edit_text_background" />
 
     <Button
         android:id="@+id/registerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register"/>
+        android:text="Register"
+        android:backgroundTint="@color/buttonColor"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="8dp"
+        style="@style/ButtonStyle" />
+
+    <Button
+        android:id="@+id/backToLoginBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Back to Login"
+        android:backgroundTint="@color/buttonColor"
+        android:textColor="@android:color/white"
+        style="@style/ButtonStyle" />
 
 </LinearLayout>
