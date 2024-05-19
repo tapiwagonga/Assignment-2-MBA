@@ -1,7 +1,6 @@
 package com.example.assignment2___
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -18,6 +17,7 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var saveButton: Button
+    private val calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,8 +25,7 @@ class EditProfileActivity : AppCompatActivity() {
 
         dbHelper = DatabaseHelper(this)
 
-        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-        userId = sharedPreferences.getInt("USER_ID", 0)
+        userId = intent.getIntExtra("USER_ID", 0)
 
         fullNameEditText = findViewById(R.id.fullNameEditText)
         dobEditText = findViewById(R.id.dobEditText)
@@ -34,8 +33,10 @@ class EditProfileActivity : AppCompatActivity() {
         passwordEditText = findViewById(R.id.passwordEditText)
         saveButton = findViewById(R.id.saveButton)
 
+        // Load existing user data
         loadUserProfile()
 
+        // Set up the date picker dialog for the DOB EditText
         dobEditText.setOnClickListener {
             showDatePickerDialog()
         }
@@ -72,19 +73,23 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun showDatePickerDialog() {
-        val calendar = Calendar.getInstance()
-        val datePickerDialog = DatePickerDialog(
-            this,
-            { _, year, month, dayOfMonth ->
-                val selectedDate = Calendar.getInstance()
-                selectedDate.set(year, month, dayOfMonth)
-                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                dobEditText.setText(sdf.format(selectedDate.time))
-            },
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDobEditText()
+        }
+
+        DatePickerDialog(
+            this, dateSetListener,
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.show()
+        ).show()
+    }
+
+    private fun updateDobEditText() {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        dobEditText.setText(sdf.format(calendar.time))
     }
 }

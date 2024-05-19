@@ -1,25 +1,26 @@
 package com.example.assignment2___
 
-import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 
 class PostsAdapter(
-    private var posts: List<Post>,
-    private val onLike: (Int) -> Unit,
-    private val onComment: (Int) -> Unit,
+    private val context: Context,
+    private var posts: MutableList<Post>, // Changed to var to allow reassignment
+    private val onLike: (Post) -> Unit,
+    private val onComment: (Post) -> Unit,
     private val onEdit: (Post) -> Unit,
-    private val onDelete: (Int) -> Unit
-) : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
+    private val onDelete: (Post) -> Unit
+) : RecyclerView.Adapter<PostsAdapter.ViewHolder>() {
 
-    inner class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val contentTextView: TextView = view.findViewById(R.id.contentTextView)
+        val postImageView: ImageView = view.findViewById(R.id.postImageView)
         val likeIcon: ImageView = view.findViewById(R.id.likeIcon)
         val likesCountTextView: TextView = view.findViewById(R.id.likesCountTextView)
         val commentIcon: ImageView = view.findViewById(R.id.commentIcon)
@@ -28,63 +29,31 @@ class PostsAdapter(
         val deleteIcon: ImageView = view.findViewById(R.id.deleteIcon)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.post_item, parent, false)
-        return PostViewHolder(view)
+        return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = posts[position]
         holder.contentTextView.text = post.content
         holder.likesCountTextView.text = post.likesCount.toString()
         holder.commentsCountTextView.text = post.commentsCount.toString()
 
-        holder.likeIcon.setOnClickListener {
-            onLike(post.id)
-        }
+        // Load image using Picasso
+        Picasso.get().load(post.imageUri).into(holder.postImageView)
 
-        holder.commentIcon.setOnClickListener {
-            onComment(post.id)
-        }
-
-        holder.editIcon.setOnClickListener {
-            showEditDialog(holder.itemView.context, post)
-        }
-
-        holder.deleteIcon.setOnClickListener {
-            onDelete(post.id)
-        }
+        holder.likeIcon.setOnClickListener { onLike(post) }
+        holder.commentIcon.setOnClickListener { onComment(post) }
+        holder.editIcon.setOnClickListener { onEdit(post) }
+        holder.deleteIcon.setOnClickListener { onDelete(post) }
     }
 
     override fun getItemCount() = posts.size
 
     fun updatePosts(newPosts: List<Post>) {
-        posts = newPosts
+        posts = newPosts.toMutableList()
         notifyDataSetChanged()
-    }
-
-    private fun showEditDialog(context: Context, post: Post) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Edit Post")
-
-        val input = EditText(context)
-        input.setText(post.content)
-        builder.setView(input)
-
-        builder.setPositiveButton("Save") { dialog, _ ->
-            val newCaption = input.text.toString()
-            if (newCaption.isNotBlank()) {
-                post.content = newCaption
-                onEdit(post)
-                notifyItemChanged(posts.indexOf(post))
-            }
-            dialog.dismiss()
-        }
-        builder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.cancel()
-        }
-
-        builder.show()
     }
 }

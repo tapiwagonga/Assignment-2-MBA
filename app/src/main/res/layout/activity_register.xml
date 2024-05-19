@@ -1,87 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center_horizontal"
-    android:background="@color/backgroundColor"
-    tools:context=".RegisterActivity">
+    android:padding="16dp">
 
-    <ImageView
-        android:id="@+id/logoImageView"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@drawable/logo"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="App Logo" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Please fill out the fields to register"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="16dp" />
+    <!-- Other views like EditTexts for user details -->
 
     <EditText
-        android:id="@+id/nameEditText"
+        android:id="@+id/fullNameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Full Name"
-        android:layout_marginBottom="8dp"
-        android:padding="10dp"
-        android:background="@drawable/edit_text_background" />
+        android:hint="Full Name" />
+
+    <EditText
+        android:id="@+id/emailEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email" />
 
     <EditText
         android:id="@+id/dobEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Date of Birth"
-        android:focusable="false"
-        android:clickable="true"
-        android:layout_marginBottom="8dp"
-        android:padding="10dp"
-        android:background="@drawable/edit_text_background" />
-
-    <EditText
-        android:id="@+id/emailEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email Address"
-        android:layout_marginBottom="8dp"
-        android:padding="10dp"
-        android:background="@drawable/edit_text_background" />
+        android:focusable="false" />
 
     <EditText
         android:id="@+id/passwordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
-        android:layout_marginBottom="16dp"
-        android:inputType="textPassword"
-        android:padding="10dp"
-        android:background="@drawable/edit_text_background" />
+        android:inputType="textPassword" />
 
+    <!-- Register and Back buttons -->
     <Button
         android:id="@+id/registerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register"
-        android:backgroundTint="@color/buttonColor"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="8dp"
-        style="@style/ButtonStyle" />
+        android:text="Register" />
 
     <Button
-        android:id="@+id/backToLoginBtn"
+        android:id="@+id/backButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Back to Login"
-        android:backgroundTint="@color/buttonColor"
-        android:textColor="@android:color/white"
-        style="@style/ButtonStyle" />
-
+        android:text="Back" />
 </LinearLayout>

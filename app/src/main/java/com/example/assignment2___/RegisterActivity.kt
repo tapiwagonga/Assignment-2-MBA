@@ -1,74 +1,79 @@
 package com.example.assignment2___
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.text.SimpleDateFormat
 import java.util.*
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
-    private lateinit var nameEditText: EditText
-    private lateinit var dobEditText: EditText
+    private lateinit var fullNameEditText: EditText
     private lateinit var emailEditText: EditText
+    private lateinit var dobEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var registerButton: Button
-    private lateinit var backToLoginBtn: Button
+    private lateinit var backButton: Button
+    private val calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
         dbHelper = DatabaseHelper(this)
-
-        nameEditText = findViewById(R.id.nameEditText)
-        dobEditText = findViewById(R.id.dobEditText)
+        fullNameEditText = findViewById(R.id.fullNameEditText)
         emailEditText = findViewById(R.id.emailEditText)
+        dobEditText = findViewById(R.id.dobEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         registerButton = findViewById(R.id.registerButton)
-        backToLoginBtn = findViewById(R.id.backToLoginBtn)
+        backButton = findViewById(R.id.backButton)
 
-        dobEditText.setOnClickListener { showDatePickerDialog() }
+        // Set up the date picker dialog for the DOB EditText
+        dobEditText.setOnClickListener {
+            showDatePickerDialog()
+        }
 
-        registerButton.setOnClickListener { registerUser() }
-        backToLoginBtn.setOnClickListener { finish() }
+        registerButton.setOnClickListener {
+            val fullName = fullNameEditText.text.toString().trim()
+            val email = emailEditText.text.toString().trim()
+            val dob = dobEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
+            val success = dbHelper.addUser(fullName, dob, email, password, 0) // isAdmin is 0 for normal users
+
+            if (success != -1L) {
+                Toast.makeText(this, "User registered successfully", Toast.LENGTH_SHORT).show()
+                finish()
+            } else {
+                Toast.makeText(this, "Failed to register user", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        backButton.setOnClickListener {
+            finish()
+        }
     }
 
     private fun showDatePickerDialog() {
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDobEditText()
+        }
 
-        val datePickerDialog = DatePickerDialog(this,
-            { _, selectedYear, selectedMonth, selectedDay ->
-                dobEditText.setText("$selectedDay/${selectedMonth + 1}/$selectedYear")
-            }, year, month, day)
-        datePickerDialog.show()
+        DatePickerDialog(
+            this, dateSetListener,
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
-    private fun registerUser() {
-        val fullName = nameEditText.text.toString().trim()
-        val dob = dobEditText.text.toString().trim()
-        val email = emailEditText.text.toString().trim()
-        val password = passwordEditText.text.toString().trim()
-
-        if (fullName.isEmpty() || dob.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val rowId = dbHelper.addUser(fullName, dob, email, password, 0)
-        if (rowId != -1L) {
-            Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            finish()
-        } else {
-            Toast.makeText(this, "Registration failed, please try again", Toast.LENGTH_SHORT).show()
-        }
+    private fun updateDobEditText() {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        dobEditText.setText(sdf.format(calendar.time))
     }
 }

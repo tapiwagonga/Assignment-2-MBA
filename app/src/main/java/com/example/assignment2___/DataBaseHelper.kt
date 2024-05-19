@@ -14,7 +14,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         const val DATABASE_NAME = "schoolApp.db"
-        const val DATABASE_VERSION = 4
+        const val DATABASE_VERSION = 3
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -36,6 +36,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             author_id INTEGER NOT NULL,
             content TEXT NOT NULL,
+            image_uri TEXT,
             likes_count INTEGER DEFAULT 0,
             comments_count INTEGER DEFAULT 0,
             date_created INTEGER DEFAULT 0,
@@ -83,14 +84,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             db.execSQL("ALTER TABLE Posts ADD COLUMN is_edited INTEGER DEFAULT 0")
         }
         if (oldVersion < 4) {
-            db.execSQL("ALTER TABLE Comments ADD COLUMN likes_count INTEGER DEFAULT 0")
-            db.execSQL("ALTER TABLE Comments ADD COLUMN dislikes_count INTEGER DEFAULT 0")
+            db.execSQL("ALTER TABLE Posts ADD COLUMN image_uri TEXT NOT NULL DEFAULT ''")
         }
         if (oldVersion < newVersion) {
             db.execSQL("DROP TABLE IF EXISTS Users")
             db.execSQL("DROP TABLE IF EXISTS Posts")
             db.execSQL("DROP TABLE IF EXISTS Comments")
-            db.execSQL("DROP TABLE IF EXISTS ChatMessages")
             onCreate(db)
         }
     }
@@ -125,7 +124,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return userName
     }
 
-    fun addComment(postId: Int, authorId: Int, content: String, context: Context) {
+
+
+    fun addComment(context: Context, postId: Int, authorId: Int, content: String): Comment? {
         val db = writableDatabase
         val values = ContentValues().apply {
             put("post_id", postId)
@@ -133,22 +134,41 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put("content", content)
             put("date_created", System.currentTimeMillis())
         }
-        db.insert("Comments", null, values)
-        db.execSQL("UPDATE Posts SET comments_count = comments_count + 1 WHERE id = ?", arrayOf(postId))
+        val commentId = db.insert("Comments", null, values)
 
         // Send notification
         NotificationUtils.sendNotification(context, "New Comment", "Someone commented on your post.")
+
+        if (commentId == -1L) {
+            return null
+        }
+
+        return Comment(
+            id = commentId.toInt(),
+            postId = postId,
+            authorId = authorId,
+            authorName = getUserNameById(authorId) ?: "Unknown",
+            content = content,
+            dateCreated = System.currentTimeMillis(),
+            likesCount = 0,
+            dislikesCount = 0
+        )
     }
 
 
 
 
 
-    // Add dislike to comment
+    fun addLikeToComment(commentId: Int) {
+        val db = writableDatabase
+        db.execSQL("UPDATE Comments SET likes_count = likes_count + 1 WHERE id = ?", arrayOf(commentId))
+    }
+
     fun addDislikeToComment(commentId: Int) {
         val db = writableDatabase
-        db.execSQL("UPDATE Comments SET dislikes_count = dislikes_count + 1 WHERE id = ?", arrayOf(commentId.toString()))
+        db.execSQL("UPDATE Comments SET dislikes_count = dislikes_count + 1 WHERE id = ?", arrayOf(commentId))
     }
+
 
     fun authenticateUser(email: String, password: String, isAdmin: Boolean): User? {
         val db = this.readableDatabase
@@ -179,10 +199,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     fun getCommentById(commentId: Int): Comment? {
-        val db = this.readableDatabase
+        val db = readableDatabase
         val cursor = db.query(
             "Comments",
-            arrayOf("id", "post_id", "author_id", "content", "likes_count", "dislikes_count", "date_created"),
+            arrayOf("id", "post_id", "author_id", "author_name", "content", "likes_count", "dislikes_count", "date_created"),
             "id = ?",
             arrayOf(commentId.toString()),
             null, null, null
@@ -190,25 +210,20 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
         var comment: Comment? = null
         if (cursor.moveToFirst()) {
-            val authorId = cursor.getInt(cursor.getColumnIndexOrThrow("author_id"))
-            val authorName = getUserNameById(authorId) ?: "Unknown"
-
             comment = Comment(
                 id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                 postId = cursor.getInt(cursor.getColumnIndexOrThrow("post_id")),
-                authorId = authorId,
-                authorName = authorName,
+                authorId = cursor.getInt(cursor.getColumnIndexOrThrow("author_id")),
+                authorName = cursor.getString(cursor.getColumnIndexOrThrow("author_name")),
                 content = cursor.getString(cursor.getColumnIndexOrThrow("content")),
-                dateCreated = cursor.getLong(cursor.getColumnIndexOrThrow("date_created")),
                 likesCount = cursor.getInt(cursor.getColumnIndexOrThrow("likes_count")),
-                dislikesCount = cursor.getInt(cursor.getColumnIndexOrThrow("dislikes_count"))
+                dislikesCount = cursor.getInt(cursor.getColumnIndexOrThrow("dislikes_count")),
+                dateCreated = cursor.getLong(cursor.getColumnIndexOrThrow("date_created"))
             )
         }
         cursor.close()
         return comment
     }
-
-
 
 
     fun getAllUsers(): List<User> {
@@ -233,6 +248,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.close()
         return users
     }
+
 
     fun getUserById(userId: Int): User? {
         val db = this.readableDatabase
@@ -301,7 +317,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val db = this.readableDatabase
         val cursor = db.query(
             "Posts",
-            arrayOf("id", "author_id", "content", "likes_count", "comments_count", "date_created", "date_updated", "is_edited"),
+            arrayOf("id", "author_id", "content", "image_uri", "likes_count", "comments_count", "date_created", "date_updated", "is_edited"),
             "id = ?",
             arrayOf(postId.toString()),
             null, null, null
@@ -313,6 +329,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                 authorId = cursor.getInt(cursor.getColumnIndexOrThrow("author_id")),
                 content = cursor.getString(cursor.getColumnIndexOrThrow("content")),
+                imageUri = cursor.getString(cursor.getColumnIndexOrThrow("image_uri")), // Retrieve the image URI
                 likesCount = cursor.getInt(cursor.getColumnIndexOrThrow("likes_count")),
                 commentsCount = cursor.getInt(cursor.getColumnIndexOrThrow("comments_count")),
                 dateCreated = cursor.getLong(cursor.getColumnIndexOrThrow("date_created")),
@@ -323,6 +340,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         cursor.close()
         return post
     }
+
 
     fun updatePostCaption(postId: Int, newCaption: String): Boolean {
         val db = this.writableDatabase
@@ -345,6 +363,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                     authorId = cursor.getInt(cursor.getColumnIndexOrThrow("author_id")),
                     content = cursor.getString(cursor.getColumnIndexOrThrow("content")),
+                    imageUri = cursor.getString(cursor.getColumnIndexOrThrow("image_uri")), // Retrieve the image URI
                     likesCount = cursor.getInt(cursor.getColumnIndexOrThrow("likes_count")),
                     commentsCount = cursor.getInt(cursor.getColumnIndexOrThrow("comments_count")),
                     dateCreated = cursor.getLong(cursor.getColumnIndexOrThrow("date_created")),
@@ -374,6 +393,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                         authorId = cursor.getInt(cursor.getColumnIndexOrThrow("author_id")),
                         content = cursor.getString(cursor.getColumnIndexOrThrow("content")),
+                        imageUri = cursor.getString(cursor.getColumnIndexOrThrow("image_uri")), // Add this line
                         likesCount = cursor.getInt(cursor.getColumnIndexOrThrow("likes_count")),
                         commentsCount = cursor.getInt(cursor.getColumnIndexOrThrow("comments_count")),
                         dateCreated = cursor.getLong(cursor.getColumnIndexOrThrow("date_created")),
@@ -387,6 +407,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return posts
     }
 
+
+
+
+
     private fun getCurrentDateTime(): Long {
         return System.currentTimeMillis()
     }
@@ -396,6 +420,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val date = Date(timestamp)
         return sdf.format(date)
     }
+
+
 
     fun addLike(postId: Int) {
         val db = writableDatabase
@@ -450,26 +476,26 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
 
-    fun addPost(context: Context, authorId: Int, content: String): Long {
+    fun addPost(authorId: Int, content: String, imageUri: String): Long {
         val db = writableDatabase
         val values = ContentValues().apply {
             put("author_id", authorId)
             put("content", content)
+            put("image_uri", imageUri)
             put("likes_count", 0)
             put("comments_count", 0)
             put("date_created", System.currentTimeMillis())
             put("date_updated", System.currentTimeMillis())
             put("is_edited", 0)
         }
-        val postId = db.insert("Posts", null, values)
-
-        // Send notification
-        NotificationUtils.sendNotification(context, "New Post", "A new post has been added.")
-
-        return postId
+        return db.insert("Posts", null, values)
     }
-
 }
+
+
+
+
+
 
 
 

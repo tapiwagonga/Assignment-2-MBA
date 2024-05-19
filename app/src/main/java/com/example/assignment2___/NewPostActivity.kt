@@ -23,10 +23,10 @@ class NewPostActivity : AppCompatActivity() {
     private lateinit var captionEditText: EditText
     private lateinit var uploadButton: Button
     private lateinit var submitButton: Button
-    private lateinit var urlUploadButton: Button
     private lateinit var backButton: Button
     private lateinit var bottomNavigationView: BottomNavigationView
     private var imageUri: Uri? = null
+    private var userId: Int = 1 // Replace this with the actual user ID logic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,26 +42,12 @@ class NewPostActivity : AppCompatActivity() {
         captionEditText = findViewById(R.id.captionEditText)
         uploadButton = findViewById(R.id.uploadButton)
         submitButton = findViewById(R.id.submitButton)
-        urlUploadButton = findViewById(R.id.urlUploadButton)
         backButton = findViewById(R.id.backButton)
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
-
-        imageUri = Uri.parse("android.resource://${packageName}/${R.drawable.placeholder_image}")
-        imageView.setImageURI(imageUri)
 
         uploadButton.setOnClickListener {
             val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(pickPhotoIntent, PICK_IMAGE_REQUEST)
-        }
-
-        urlUploadButton.setOnClickListener {
-            val url = captionEditText.text.toString()
-            if (url.isNotEmpty() && (url.startsWith("http://") || url.startsWith("https://"))) {
-                imageUri = Uri.parse(url)
-                imageView.setImageURI(imageUri)
-            } else {
-                Toast.makeText(this, "Invalid URL", Toast.LENGTH_SHORT).show()
-            }
         }
 
         submitButton.setOnClickListener {
@@ -101,10 +87,15 @@ class NewPostActivity : AppCompatActivity() {
             return
         }
 
+        if (imageUri == null) {
+            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         progressBar.visibility = View.VISIBLE
         Handler().postDelayed({
             val dbHelper = DatabaseHelper(this)
-            dbHelper.addPost(1, caption) // Assuming userId is 1 for now
+            dbHelper.addPost(userId, caption, imageUri.toString()) // Pass the imageUri here
             progressBar.visibility = View.GONE
             Toast.makeText(this, "Post added successfully", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, MainActivity::class.java)

@@ -1,10 +1,12 @@
 package com.example.assignment2___
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.Calendar
 
 class AddUserActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
@@ -27,6 +29,10 @@ class AddUserActivity : AppCompatActivity() {
         addButton = findViewById(R.id.addButton)
         backButton = findViewById(R.id.backButton)
 
+        dobEditText.setOnClickListener {
+            showDatePickerDialog()
+        }
+
         addButton.setOnClickListener {
             val fullName = nameEditText.text.toString().trim()
             val email = emailEditText.text.toString().trim()
@@ -45,5 +51,19 @@ class AddUserActivity : AppCompatActivity() {
         backButton.setOnClickListener {
             finish()
         }
+    }
+
+    private fun showDatePickerDialog() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            val selectedDate = "$selectedYear-${selectedMonth + 1}-$selectedDay"
+            dobEditText.setText(selectedDate)
+        }, year, month, day)
+
+        datePickerDialog.show()
     }
 }

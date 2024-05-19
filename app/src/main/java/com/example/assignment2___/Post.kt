@@ -4,6 +4,7 @@ data class Post(
     val id: Int,
     val authorId: Int,
     var content: String,
+    var imageUri: String, // Add this line
     var likesCount: Int = 0,
     var commentsCount: Int = 0,
     var dateCreated: Long = 0,

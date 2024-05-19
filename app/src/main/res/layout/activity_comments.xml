@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,18 +8,23 @@
         android:id="@+id/commentsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"/>
 
     <EditText
         android:id="@+id/addCommentEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Add a comment" />
+        android:hint="Add a comment"/>
 
     <Button
         android:id="@+id/addCommentButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Comment" />
+        android:text="Add Comment"/>
 
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Back"/>
 </LinearLayout>

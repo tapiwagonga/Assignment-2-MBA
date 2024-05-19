@@ -13,9 +13,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Create the notification channel
-        NotificationUtils.createNotificationChannel(this)
-
         currentUserId = intent.getIntExtra("USER_ID", -1)
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
@@ -35,7 +32,9 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_create_post -> {
-                    startActivity(Intent(this, NewPostActivity::class.java))
+                    val intent = Intent(this, NewPostActivity::class.java)
+                    intent.putExtra("USER_ID", currentUserId) // Pass the user ID to NewPostActivity
+                    startActivity(intent)
                     true
                 }
                 else -> false
