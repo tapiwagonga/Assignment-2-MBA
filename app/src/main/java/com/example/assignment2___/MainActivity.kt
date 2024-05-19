@@ -32,9 +32,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_create_post -> {
-                    val intent = Intent(this, NewPostActivity::class.java)
-                    intent.putExtra("USER_ID", currentUserId) // Pass the user ID to NewPostActivity
-                    startActivity(intent)
+                    startActivity(Intent(this, NewPostActivity::class.java))
                     true
                 }
                 else -> false
@@ -42,6 +40,9 @@ class MainActivity : AppCompatActivity() {
         }
         // Set default selection
         bottomNavigationView.selectedItemId = R.id.navigation_posts
+
+        // Create notification channel
+        NotificationUtils.createNotificationChannel(this)
     }
 
     private fun replaceFragment(fragment: Fragment) {

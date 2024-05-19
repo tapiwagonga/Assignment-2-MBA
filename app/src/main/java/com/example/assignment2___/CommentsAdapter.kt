@@ -5,7 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 
 class CommentsAdapter(
     private val comments: MutableList<Comment>,
@@ -18,8 +23,8 @@ class CommentsAdapter(
         val contentTextView: TextView = view.findViewById(R.id.contentTextView)
         val authorTextView: TextView = view.findViewById(R.id.authorTextView)
         val dateTextView: TextView = view.findViewById(R.id.dateTextView)
-        val likeImageView: ImageView = view.findViewById(R.id.likeIcon)
-        val dislikeImageView: ImageView = view.findViewById(R.id.dislikeIcon)
+        val likeIcon: ImageView = view.findViewById(R.id.likeIcon)
+        val dislikeIcon: ImageView = view.findViewById(R.id.dislikeIcon)
         val likeCountTextView: TextView = view.findViewById(R.id.likeCountTextView)
         val dislikeCountTextView: TextView = view.findViewById(R.id.dislikeCountTextView)
     }
@@ -33,41 +38,26 @@ class CommentsAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comment = comments[position]
         holder.contentTextView.text = comment.content
-        holder.authorTextView.text = dbHelper.getUserNameById(comment.authorId) ?: "Unknown"
+        holder.authorTextView.text = comment.authorName
         holder.dateTextView.text = formatDate(comment.dateCreated)
         holder.likeCountTextView.text = comment.likesCount.toString()
         holder.dislikeCountTextView.text = comment.dislikesCount.toString()
 
-        holder.likeImageView.setOnClickListener {
+        holder.likeIcon.setOnClickListener {
             onLike(comment.id)
+            notifyItemChanged(position)
         }
 
-        holder.dislikeImageView.setOnClickListener {
+        holder.dislikeIcon.setOnClickListener {
             onDislike(comment.id)
+            notifyItemChanged(position)
         }
     }
 
     override fun getItemCount() = comments.size
 
     private fun formatDate(timestamp: Long): String {
-        val sdf = java.text.SimpleDateFormat("dd-MM-yyyy HH:mm:ss", java.util.Locale.getDefault())
-        return sdf.format(java.util.Date(timestamp))
-    }
-
-    fun addComment(comment: Comment) {
-        comments.add(comment)
-        notifyItemInserted(comments.size - 1)
-    }
-
-    fun updateCommentLikeStatus(commentId: Int, isLike: Boolean) {
-        val comment = comments.find { it.id == commentId }
-        comment?.let {
-            if (isLike) {
-                it.likesCount += 1
-            } else {
-                it.dislikesCount += 1
-            }
-            notifyItemChanged(comments.indexOf(it))
-        }
+        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date(timestamp))
     }
 }

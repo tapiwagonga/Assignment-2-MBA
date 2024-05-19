@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 object NotificationUtils {
-    const val CHANNEL_ID = "channel_id" // Update this line to make CHANNEL_ID public
+    const val CHANNEL_ID = "channel_id"
     private const val CHANNEL_NAME = "Channel Name"
     private const val CHANNEL_DESC = "Channel Description"
 

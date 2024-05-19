@@ -26,7 +26,6 @@ class NewPostActivity : AppCompatActivity() {
     private lateinit var backButton: Button
     private lateinit var bottomNavigationView: BottomNavigationView
     private var imageUri: Uri? = null
-    private var userId: Int = 1 // Replace this with the actual user ID logic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +43,10 @@ class NewPostActivity : AppCompatActivity() {
         submitButton = findViewById(R.id.submitButton)
         backButton = findViewById(R.id.backButton)
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
+
+        // Set default image
+        imageUri = Uri.parse("android.resource://${packageName}/${R.drawable.image}")
+        imageView.setImageURI(imageUri)
 
         uploadButton.setOnClickListener {
             val pickPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -87,15 +90,10 @@ class NewPostActivity : AppCompatActivity() {
             return
         }
 
-        if (imageUri == null) {
-            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show()
-            return
-        }
-
         progressBar.visibility = View.VISIBLE
         Handler().postDelayed({
             val dbHelper = DatabaseHelper(this)
-            dbHelper.addPost(userId, caption, imageUri.toString()) // Pass the imageUri here
+            dbHelper.addPost(this, 1, caption, imageUri.toString()) // Assuming userId is 1 for now
             progressBar.visibility = View.GONE
             Toast.makeText(this, "Post added successfully", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, MainActivity::class.java)

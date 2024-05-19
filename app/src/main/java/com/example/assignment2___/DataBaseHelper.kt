@@ -126,7 +126,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
 
 
-    fun addComment(context: Context, postId: Int, authorId: Int, content: String): Comment? {
+    fun addComment(context: Context, postId: Int, authorId: Int, content: String) {
         val db = writableDatabase
         val values = ContentValues().apply {
             put("post_id", postId)
@@ -134,26 +134,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put("content", content)
             put("date_created", System.currentTimeMillis())
         }
-        val commentId = db.insert("Comments", null, values)
+        db.insert("Comments", null, values)
+        db.execSQL("UPDATE Posts SET comments_count = comments_count + 1 WHERE id = ?", arrayOf(postId))
 
         // Send notification
         NotificationUtils.sendNotification(context, "New Comment", "Someone commented on your post.")
-
-        if (commentId == -1L) {
-            return null
-        }
-
-        return Comment(
-            id = commentId.toInt(),
-            postId = postId,
-            authorId = authorId,
-            authorName = getUserNameById(authorId) ?: "Unknown",
-            content = content,
-            dateCreated = System.currentTimeMillis(),
-            likesCount = 0,
-            dislikesCount = 0
-        )
     }
+
+
+
 
 
 
@@ -408,9 +397,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
 
-
-
-
     private fun getCurrentDateTime(): Long {
         return System.currentTimeMillis()
     }
@@ -476,7 +462,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
 
-    fun addPost(authorId: Int, content: String, imageUri: String): Long {
+    fun addPost(context: Context, authorId: Int, content: String, imageUri: String): Long {
         val db = writableDatabase
         val values = ContentValues().apply {
             put("author_id", authorId)
@@ -488,8 +474,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put("date_updated", System.currentTimeMillis())
             put("is_edited", 0)
         }
-        return db.insert("Posts", null, values)
+        val postId = db.insert("Posts", null, values)
+
+        // Send notification
+        NotificationUtils.sendNotification(context, "New Post", "A new post has been added.")
+
+        return postId
     }
+
+
 }
 
 
